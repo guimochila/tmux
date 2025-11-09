@@ -4,14 +4,22 @@ export LC_ALL=en_US.UTF-8
 
 current_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source $current_dir/utils.sh
-# Add Kanagawa Colors
-source $current_dir/kanawaga_colors.sh
-# Add Dracula Colors
-source $current_dir/dracula_colors.sh
 
 main() {
   # Get theme
   theme=$(get_tmux_option "@dracula-theme" "")
+  ignore_window_colors=$(get_tmux_option "@dracula-ignore-window-colors" false)
+
+  case "$theme" in
+  lotus | dragon | kanagawa)
+    source $current_dir/kanawaga_colors.sh
+    source $current_dir/kanawaga_theme.sh
+    ;;
+  *)
+    source $current_dir/dracula_colors.sh
+    ;;
+  esac
+
   set_theme $theme
 
   # set configuration option variables
@@ -399,6 +407,11 @@ main() {
     tmux set-window-option -g window-status-current-format "#[fg=${window_sep_fg}]#[bg=${window_sep_bg}]${window_sep}#[fg=${white}]#[bg=${dark_purple}] #I #W${current_flags} #[fg=${dark_purple}]#[bg=${bg_color}]${left_sep}"
   else
     tmux set-window-option -g window-status-current-format "#[fg=${white}]#[bg=${dark_purple}] #I #W${current_flags} "
+  fi
+
+  # Ignore window colors
+  if ! $ignore_window_colors; then
+    tmux set-window-option -g window-style "fg=${white},bg=${dark_gray}"
   fi
 
   tmux set-window-option -g window-status-format "#[fg=${white}]#[bg=${bg_color}] #I #W${flags}"
